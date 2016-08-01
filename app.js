@@ -26,7 +26,7 @@ app.use('/api/test', function(req, res) {
 	res.send("hello world");
 });
 
-app.listen(3000, function() {
+app.listen(process.env.port || 3000, function() {
 	console.log("app is listening on port 3000");
 });
 
