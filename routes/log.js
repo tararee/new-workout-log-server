@@ -1,6 +1,7 @@
 var router = require('express').Router();
 var sequelize = require('../db');
 var Log = sequelize.import('../models/log');
+var Feed = sequelize.import('../models/feed');
 
 // create log
 router.post('/', function(req, res) {
@@ -14,15 +15,25 @@ router.post('/', function(req, res) {
 			description: description,
 			result: result,
 			owner: owner,
-			def: definition
+			def: definition 
 		})
 		.then(
 			function createSuccess(log) {
-				var io = req.app.get('socketio');
-				var message = { log: log, username: req.user.username };
 				res.json(log);
-				io.emit("new log", message);
-				
+				var feedItem = { 
+					//message: ` just completed ${log.def} with a result of: ${log.result}`,
+					message: ' just completed ' + log.def + ' with a result of: ' + log.result,
+					username: req.user.username 
+				};
+				Feed.create(feedItem)
+				.then(
+					function success(data) {
+						var io = req.app.get('socketio');
+						io.emit("new log", feedItem);
+					},
+					function error(err) {
+						res.send(500, err.message);
+					});
 			},
 			function createError(err) {
 				res.send(500, err.message);
