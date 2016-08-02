@@ -14,11 +14,15 @@ router.post('/', function(req, res) {
 			description: description,
 			result: result,
 			owner: owner,
-			def: definition 
+			def: definition
 		})
 		.then(
 			function createSuccess(log) {
+				var io = req.app.get('socketio');
+				var message = { log: log, username: req.user.username };
 				res.json(log);
+				io.emit("new log", message);
+				
 			},
 			function createError(err) {
 				res.send(500, err.message);
